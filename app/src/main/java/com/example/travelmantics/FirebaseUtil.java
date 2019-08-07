@@ -1,6 +1,7 @@
 package com.example.travelmantics;
 
 
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,9 +31,8 @@ public class FirebaseUtil {
     public static ArrayList<TravelDeal> mDeals;
     private static final int RC_SIGN_IN = 123;
     private static ListActivity caller;
-    private FirebaseUtil(){};
     public static boolean isAdmin;
-
+    private FirebaseUtil(){}
 
     public static void openFbReference(String ref, final ListActivity callerActivity) {
         if (firebaseUtil == null) {
@@ -55,7 +55,6 @@ public class FirebaseUtil {
                 }
             };
             connectStorage();
-
         }
 
         mDeals = new ArrayList<TravelDeal>();
@@ -73,18 +72,31 @@ public class FirebaseUtil {
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
+                        .setIsSmartLockEnabled(false)
+                        .setLogo(R.drawable.ic_card_travel_black_24dp)
                         .build(),
                 RC_SIGN_IN);
     }
 
+    public static void signOut() {
+        AuthUI.getInstance()
+                .signOut(caller)
+                .addOnCompleteListener(task -> {
+                    Log.d("Logout", "User Logged Out");
+                    Toast.makeText(caller, "Signed Out Successfully", Toast.LENGTH_SHORT).show();
+                    FirebaseUtil.attachListener();
+                });
+    }
+
     private static void checkAdmin(String uid) {
-        FirebaseUtil.isAdmin=false;
-        DatabaseReference ref = mFirebaseDatabase.getReference().child("administrators")
+        FirebaseUtil.isAdmin = false;
+        DatabaseReference ref = mFirebaseDatabase.getReference()
+                .child("administrators")
                 .child(uid);
         ChildEventListener listener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                FirebaseUtil.isAdmin=true;
+                FirebaseUtil.isAdmin = true;
                 caller.showMenu();
             }
 
